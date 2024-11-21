@@ -7,19 +7,19 @@ crearCopiaCompleta () {
     echo
     echo -n "Escriba la dirección de origen (Dirección Absoluta): "
     read direccionOrigen
+
+   
     
-    fecha=$(date +%Y-%m-%d-%H%M%S)
-    direccionDestino = "/backups/backup-$fecha"
+    fecha=$(date +%Y-%m-%d)
 
-    mkdir -p ${BACKUP_DIR}
-    set -- ${BACKUP_DIR}/backup-$fecha-??.tar.gz
-    lastname=${!#}
-    backupnr=${lastname##*backup-}
-    backupnr=${backupnr%%.*}
-    backupnr=${backupnr//\?/0}
-    backupnr=$[10#${backupnr}
+    fecha2=$(date +%Y-%m-%d-%H%M%S)
+    direccionDestino=/backups/backup-$fecha
 
-    filename=backup-${backupnr}.tar.gz
+    sudo mkdir -p $direccionDestino
+   
+    cadena=${direccionOrigen//\//-}
+
+    filename=backup-${cadena}-${fecha2}.tar.gz
 
     sudo tar -cvzpf $direccionDestino/${filename} $direccionOrigen
 
@@ -31,8 +31,8 @@ crearCopiaCompleta () {
 
     while [ true ]
     do
-        switch $opc in
-            "Y" | "y")
+        case $opc in
+            "Y" | "y")  
                 programarCopia ""
             ;;
             "N" | "n")
@@ -53,32 +53,29 @@ crearCopiaIncremental () {
     echo -n "Escriba la dirección de origen (Dirección Absoluta): "
     read direccionOrigen
     
-    fecha=$(date +%Y-%m-%d-%H%M%S)
-    BACKUP_DIR="/backups/backup-$fecha"
-    ROTATE_DIR="/backups/backup-$fecha/rotate"
+    fecha=$(date +%Y-%m-%d)
+
+    direccionDestino="/backups/backup-$fecha"
 
     TIMESTAMP="timestamp.dat"
-    SOURCE="$HOME/$direccionOrigen"
     
-    EXCLUDE="--exclude=/mnt/* --exclude=/proc/* --exclude=/sys/* --exclude=/tmp/*"
-    cd /
-    
-    mkdir -p ${BACKUP_DIR}
-    set -- ${BACKUP_DIR}/backup-$fecha-??.tar.gz
-    lastname=${!#}
-    backupnr=${lastname##*backup-}
-    backupnr=${backupnr%%.*}
-    backupnr=${backupnr//\?/0}
-    backupnr=$[10#${backupnr}
+    sudo mkdir -p ${direccionDestino}
 
-    if [ "$[backupnr++]" -ge 30 ]; then
-        mkdir -p ${ROTATE_DIR}/${fecha}
-        mv ${BACKUP_DIR}/b* ${ROTATE_DIR}/${DATE}
-        mv ${BACKUP_DIR}/t* ${ROTATE_DIR}/${DATE}
-        backupnr=1
-    fi
+    cadena=${direccionOrigen//\//-}
+    contador=0
 
-    tar -cpzf ${BACKUP_DIR}/${filename} -g ${BACKUP_DIR}/${TIMESTAMP} -X $EXCLUDE ${SOURCE}
+    # Bucle para encontrar un nombre único
+    while [[ -e "${cadena}-$(printf "%02d" $contador)" ]]; do
+        ((contador++))
+    done
+
+    # Crear el nombre único
+    nombre_final="${cadena}-$(printf "%02d" $contador)"
+
+
+    filename=backup-${nombre_final}-${fecha}.tar.gz
+   
+    sudo tar -cpzf ${direccionDestino}/${filename} -g ${direccionDestino}/${TIMESTAMP} $direccionOrigen
 
     echo "----------------------------------------"
     echo "Copia de seguridad creada con exito."
@@ -88,7 +85,7 @@ crearCopiaIncremental () {
 
     while [ true ]
     do
-        switch $opc in
+        case $opc in
             "Y" | "y")
                 programarCopia ""
             ;;
@@ -115,17 +112,21 @@ listarCopias () {
 }
 
 eliminarCopia () {
-
+    echo "Hola"
 }
 
 restablecerArchivo () {
-
+    echo "Hola"
 }
 
+programarCopia () {
+    echo "hola"
+}
 
 while [ true ]
 do
     echo
+    echo $HOME
     echo "-------------------------------------------------------"
     echo "Bienvenido al Script Gestor de Copias de Seguridad"
     echo "-------------------------------------------------------"
