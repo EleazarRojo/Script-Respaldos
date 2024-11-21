@@ -7,12 +7,22 @@ crearCopiaCompleta () {
     echo
     echo -n "Escriba la dirección de origen (Dirección Absoluta): "
     read direccionOrigen
-    echo
-    echo -n "Escribe donde guardar la Copia de Seguridad (Dirección Absoluta): "
-    read direccionDestino
-
+    
+    
     fecha=$(date +%Y-%m-%d-%H%M%S)
-    tar -cvzpf $direccionDestino/backup-$fecha.tar.gz $direccionOrigen
+    direccionDestino = "/backups/backup-$fecha"
+
+    mkdir -p ${BACKUP_DIR}
+    set -- ${BACKUP_DIR}/backup-$fecha-??.tar.gz
+    lastname=${!#}
+    backupnr=${lastname##*backup-}
+    backupnr=${backupnr%%.*}
+    backupnr=${backupnr//\?/0}
+    backupnr=$[10#${backupnr}
+
+    filename=backup-${backupnr}.tar.gz
+
+    sudo tar -cvzpf $direccionDestino/${filename} $direccionOrigen
 
     echo "----------------------------------------"
     echo "Copia de seguridad creada con exito."
@@ -46,12 +56,33 @@ crearCopiaIncremental () {
     echo
     echo -n "Escribe donde guardar la Copia de Seguridad (Dirección Absoluta): "
     read direccionDestino
-
-    BACKUP_DIR="/ carpetadestino /backup"
-    ROTATE_DIR="/ carpetadestino /backup/rotate"
-
+    
     fecha=$(date +%Y-%m-%d-%H%M%S)
-    tar -cvzpf $direccionDestino/backup-$fecha.tar.gz $direccionOrigen
+    BACKUP_DIR="/backups/backup-$fecha"
+    ROTATE_DIR="/backups/backup-$fecha/rotate"
+
+    TIMESTAMP="timestamp.dat"
+    SOURCE="$HOME/$direccionOrigen"
+    
+    EXCLUDE="--exclude=/mnt/* --exclude=/proc/* --exclude=/sys/* --exclude=/tmp/*"
+    cd /
+    
+    mkdir -p ${BACKUP_DIR}
+    set -- ${BACKUP_DIR}/backup-$fecha-??.tar.gz
+    lastname=${!#}
+    backupnr=${lastname##*backup-}
+    backupnr=${backupnr%%.*}
+    backupnr=${backupnr//\?/0}
+    backupnr=$[10#${backupnr}
+
+    if [ "$[backupnr++]" -ge 30 ]; then
+        mkdir -p ${ROTATE_DIR}/${fecha}
+        mv ${BACKUP_DIR}/b* ${ROTATE_DIR}/${DATE}
+        mv ${BACKUP_DIR}/t* ${ROTATE_DIR}/${DATE}
+        backupnr=1
+    fi
+
+    tar -cpzf ${BACKUP_DIR}/${filename} -g ${BACKUP_DIR}/${TIMESTAMP} -X $EXCLUDE ${SOURCE}
 
     echo "----------------------------------------"
     echo "Copia de seguridad creada con exito."
@@ -76,7 +107,15 @@ crearCopiaIncremental () {
 }
 
 listarCopias () {
-
+    clear
+    echo
+    echo "Seleccionó la opción de Listar Copias de Seguridad Creadas."
+    echo
+    echo "Las copias de seguridad creadas hasta el momento son:"
+    cd /backups
+    ls
+    echo
+    echo
 }
 
 eliminarCopia () {
