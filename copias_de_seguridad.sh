@@ -8,7 +8,6 @@ crearCopiaCompleta () {
     echo -n "Escriba la dirección de origen (Dirección Absoluta): "
     read direccionOrigen
     
-    
     fecha=$(date +%Y-%m-%d-%H%M%S)
     direccionDestino = "/backups/backup-$fecha"
 
@@ -53,9 +52,6 @@ crearCopiaIncremental () {
     echo
     echo -n "Escriba la dirección de origen (Dirección Absoluta): "
     read direccionOrigen
-    echo
-    echo -n "Escribe donde guardar la Copia de Seguridad (Dirección Absoluta): "
-    read direccionDestino
     
     fecha=$(date +%Y-%m-%d-%H%M%S)
     BACKUP_DIR="/backups/backup-$fecha"
