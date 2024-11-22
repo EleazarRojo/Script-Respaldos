@@ -7,13 +7,11 @@ crearCopiaCompleta () {
     echo
     echo -n "Escriba la dirección de origen (Dirección Absoluta): "
     read direccionOrigen
-
-   
     
     fecha=$(date +%Y-%m-%d)
 
-    fecha2=$(date +%Y-%m-%d-%H%M%S)
-    direccionDestino=/backups/backup-$fecha
+    fecha2=$(date +%Y-%m-%d-%H-%M-%S)
+    direccionDestino="$HOME/backups/"
 
     sudo mkdir -p $direccionDestino
    
@@ -26,23 +24,7 @@ crearCopiaCompleta () {
     echo "----------------------------------------"
     echo "Copia de seguridad creada con exito."
     echo "----------------------------------------"
-    echo -n "¿Desea programar la frecuencia de la copia de seguridad? (Y/N): "
-    read opc
-
-    while [ true ]
-    do
-        case $opc in
-            "Y" | "y")  
-                programarCopia ""
-            ;;
-            "N" | "n")
-            break
-            ;;
-            *)
-                echo "Opcion Invalida."
-            ;;
-        esac
-    done
+   
 }
 
 crearCopiaIncremental () {
@@ -52,51 +34,28 @@ crearCopiaIncremental () {
     echo
     echo -n "Escriba la dirección de origen (Dirección Absoluta): "
     read direccionOrigen
-    
-    fecha=$(date +%Y-%m-%d)
+  
+    fecha2=$(date +%Y-%m-%d-%H-%M-%S)
 
-    direccionDestino="/backups/backup-$fecha"
+    direccionDestino="$HOME/backups"
 
-    TIMESTAMP="timestamp.dat"
-    
     sudo mkdir -p ${direccionDestino}
 
     cadena=${direccionOrigen//\//-}
+
     contador=0
 
-    # Bucle para encontrar un nombre único
-    while [[ -e "${cadena}-$(printf "%02d" $contador)" ]]; do
-        ((contador++))
-    done
 
-    # Crear el nombre único
-    nombre_final="${cadena}-$(printf "%02d" $contador)"
-
-
-    filename=backup-${nombre_final}-${fecha}.tar.gz
+    filename=${cadena}-$fecha2-inc.tar.gz
    
-    sudo tar -cpzf ${direccionDestino}/${filename} -g ${direccionDestino}/${TIMESTAMP} $direccionOrigen
+    sudo tar -cvpzf ${direccionDestino}/${filename} -g ${direccionDestino}/snapshot.snar $direccionOrigen
 
     echo "----------------------------------------"
     echo "Copia de seguridad creada con exito."
     echo "----------------------------------------"
-    echo -n "¿Desea programar la frecuencia de la copia de seguridad? (Y/N): "
-    read opc
 
-    while [ true ]
-    do
-        case $opc in
-            "Y" | "y")
-                programarCopia ""
-            ;;
-            "N" | "n")
-            break
-            ;;
-            *)
-                echo "Opcion Invalida."
-            ;;
-        esac
-    done
+
+    
 }
 
 listarCopias () {
@@ -105,28 +64,42 @@ listarCopias () {
     echo "Seleccionó la opción de Listar Copias de Seguridad Creadas."
     echo
     echo "Las copias de seguridad creadas hasta el momento son:"
-    cd /backups
-    ls
+    cd $HOME/backups
+    ls -l
     echo
     echo
 }
 
 eliminarCopia () {
-    echo "Hola"
-}
+    clear
+    echo "Seleccionó la opción de eliminar copias de Seguridad"
+    echo 
+    echo
+    echo "Directorio de back ups $HOME/backups"
+    echo
+    cd $HOME/backups
+    ls -l
+    echo
+    echo "Ingrese el nombre de la copia de seguridad para eliminar"
+    read nombre
 
-restablecerArchivo () {
-    echo "Hola"
-}
+    if [ -e $nombre ]
+    then
+    sudo rm -r $HOME/backups/$nombre
 
-programarCopia () {
-    echo "hola"
+    echo "----------------------------------------"
+    echo "Copia de seguridad eliminada con exito."
+    echo "----------------------------------------"
+    else
+          echo "----------------------------------------"
+        echo "Copia de seguridad no encontrada"
+        echo "----------------------------------------"
+    fi
 }
 
 while [ true ]
 do
     echo
-    echo $HOME
     echo "-------------------------------------------------------"
     echo "Bienvenido al Script Gestor de Copias de Seguridad"
     echo "-------------------------------------------------------"
@@ -136,8 +109,7 @@ do
     echo "2.- Crear una Copia de Seguridad Incremental"
     echo "3.- Listar Copias de Seguridad"
     echo "4.- Eliminar Copia de Seguridad"
-    echo "5.- Restablecer Archivos"
-    echo "6.- Salir"
+    echo "5.- Salir"
     echo
     echo -n "Seleccione una opcion: "
     read opcion
@@ -156,12 +128,6 @@ do
             eliminarCopia
         ;;
         5)
-            restablecerArchivo
-        ;;
-        6)
-            programarCopia
-        ;;
-        7)
             echo "Saliendo del programa."
             sleep 2
             exit
